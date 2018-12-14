@@ -2,10 +2,17 @@
 clean:
 	rm -rf ./dist
 
-build: clean
-	mkdir ./dist
-	go build -o ./dist/awssh awssh/awssh.go
+build_linux:
+	GOOS=linux GOARCH=amd64 go build -o ./dist/awssh awssh/awssh.go
 	chmod +x ./dist/awssh
+	zip ./dist/awssh-linux-amd64.zip ./dist/awssh
+	rm -rf ./dist/awssh
 
-install:
-	cp ./dist/awssh ~/bin/awssh
+build_osx:
+	GOOS=darwin GOARCH=386 go build -o ./dist/awssh awssh/awssh.go
+	chmod +x ./dist/awssh
+	zip ./dist/awssh-darwin-386.zip ./dist/awssh
+	rm -rf ./dist/awssh
+
+
+build: clean build_linux build_osx
