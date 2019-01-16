@@ -21,6 +21,7 @@ func AddSshCmd(cmd *cobra.Command, conf *config.AwsshConf) {
 
 			var instance api.Ec2Instance
 			var bastion api.Ec2Instance
+			showPrivate := false
 
 			ec2Coll := api.GetServers(conf)
 
@@ -51,10 +52,14 @@ func AddSshCmd(cmd *cobra.Command, conf *config.AwsshConf) {
 			}
 
 			if useBastion {
-				bastion = selectInstance(ec2Res, "Select a bastion host")
+				bastion = selectInstance(ec2Res, "Select a bastion host", false)
 			}
 
-			instance = selectInstance(ec2Res, "Select an instance")
+			if useBastion || sshOpts.UsePrivate {
+				showPrivate = true
+			}
+
+			instance = selectInstance(ec2Res, "Select an instance", showPrivate)
 
 			sshClient := shell.NewSSHClient(instance, sshOpts)
 
@@ -79,6 +84,7 @@ func AddSshCmd(cmd *cobra.Command, conf *config.AwsshConf) {
 	flags.StringVarP(&sshOpts.IdentityFile, "identity", "i", "", "Path to ssh key file")
 	flags.StringVarP(&sshOpts.Command, "cmd", "c", "", "Send command")
 	flags.StringVarP(&sshOpts.Port, "port", "p", "22", "SSH Port")
+	flags.BoolVar(&sshOpts.UsePrivate, "private", false, "Connect using instance private ip")
 
 	cmd.AddCommand(sshCmd)
 

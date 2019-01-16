@@ -26,6 +26,7 @@ type SSHClient struct {
 type SSHOpts struct {
 	ForwardAuthSock bool
 	Tty             bool
+	UsePrivate      bool
 	IdentityFile    string
 	User, Port      string
 	Command         string
@@ -110,6 +111,10 @@ func SSHBastionLogin(bClient *SSHClient, client *SSHClient) {
 func SSHLogin(client *SSHClient) {
 
 	ip := client.Instance.Ip
+
+	if client.SSHOpts.UsePrivate {
+		ip = client.Instance.PrivateIp
+	}
 
 	addr := net.JoinHostPort(ip, client.SSHOpts.Port)
 

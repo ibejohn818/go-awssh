@@ -20,11 +20,17 @@ func AddCommands(cmd *cobra.Command, conf *config.AwsshConf) {
 	AddRunCmd(cmd, conf)
 }
 
-func selectInstance(coll []api.Ec2Instance, msg string) api.Ec2Instance {
+func selectInstance(coll []api.Ec2Instance, msg string, private bool) api.Ec2Instance {
 
 	for k, v := range coll {
 
-		ln := v.GetLine()
+		var ln string = ""
+
+		if private {
+			ln = v.GetLinePrivate()
+		} else {
+			ln = v.GetLine()
+		}
 		key := strconv.Itoa((k + 1))
 
 		fmt.Printf("%3v) %v \n", key, ln)
@@ -45,4 +51,14 @@ func selectInstance(coll []api.Ec2Instance, msg string) api.Ec2Instance {
 	}
 
 	return coll[(idx - 1)]
+}
+
+func hr() {
+
+	length := 36
+
+	for i := 0; i <= length; i++ {
+		fmt.Print("-")
+	}
+	fmt.Println("")
 }

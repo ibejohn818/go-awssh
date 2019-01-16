@@ -10,6 +10,8 @@ import (
 
 func AddLsCmd(cmd *cobra.Command, conf *config.AwsshConf) {
 
+	var showPrivate bool
+
 	lsCmd := &cobra.Command{
 		Use:   "ls",
 		Short: "List servers",
@@ -21,11 +23,19 @@ func AddLsCmd(cmd *cobra.Command, conf *config.AwsshConf) {
 			ec2Res := ec2Coll.Filtered(args)
 
 			for _, v := range ec2Res {
-				fmt.Println(v.GetLine())
+				if showPrivate {
+					fmt.Println(v.GetLinePrivate())
+				} else {
+					fmt.Println(v.GetLine())
+				}
 			}
 
 		},
 	}
+
+	flags := lsCmd.Flags()
+
+	flags.BoolVarP(&showPrivate, "private", "p", false, "Display instance private IP")
 
 	cmd.AddCommand(lsCmd)
 

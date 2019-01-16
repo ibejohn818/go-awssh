@@ -76,10 +76,10 @@ in their name tag.`,
 
 			if useBastion {
 
-				bastion := selectInstance(ec2Coll.Instances, "Select bastion instance")
+				bastion := selectInstance(ec2Coll.Instances, "Select bastion instance", false)
 				bSSH := shell.NewSSHClient(bastion, sshOpts)
 				bConn := shell.BastionRunClient(bSSH)
-				fmt.Println("------------------")
+				hr()
 				fmt.Printf("Command: %v \n", sshOpts.Command)
 				fmt.Println("Bastion:")
 				fmt.Println(bastion.GetLine())
@@ -88,7 +88,7 @@ in their name tag.`,
 				for _, v := range ec2Res {
 					fmt.Println(v.GetLinePrivate())
 				}
-				fmt.Println("------------------")
+				hr()
 
 				if !confirm {
 					confirmMsg()
@@ -126,9 +126,9 @@ in their name tag.`,
 						session.Stdout = &buffOut
 						session.Run(opts.Command)
 						fmt.Println(inst.GetLinePrivate())
-						fmt.Println("------------------")
+						hr()
 						fmt.Println(buffOut.String())
-						fmt.Println("------------------")
+						hr()
 
 						wg.Done()
 
@@ -143,7 +143,7 @@ in their name tag.`,
 				for _, v := range ec2Res {
 					fmt.Println(v.GetLine())
 				}
-				fmt.Println("------------------")
+				hr()
 
 				if !confirm {
 					confirmMsg()
@@ -181,9 +181,9 @@ in their name tag.`,
 						session.Stdout = &buffOut
 						session.Run(opts.Command)
 						fmt.Println(inst.GetLine())
-						fmt.Println("------------------")
+						hr()
 						fmt.Println(buffOut.String())
-						fmt.Println("------------------")
+						hr()
 						wg.Done()
 					}(ec2Res[k], sshOpts)
 				}
@@ -222,7 +222,7 @@ func confirmMsg() {
 	if retVal != "y" {
 		os.Exit(0)
 	}
-	fmt.Println("------------------")
+	hr()
 	fmt.Println("Results:")
-	fmt.Println("------------------")
+	hr()
 }
