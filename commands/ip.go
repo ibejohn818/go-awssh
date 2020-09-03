@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/ibejohn818/awssh/api"
-	"github.com/ibejohn818/awssh/config"
+	"github.com/ibejohn818/go-awssh/api"
+	"github.com/ibejohn818/go-awssh/config"
 	"github.com/spf13/cobra"
 )
 

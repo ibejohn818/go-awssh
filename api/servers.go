@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/bradfitz/slice"
-	"github.com/ibejohn818/awssh/config"
+	"github.com/ibejohn818/go-awssh/config"
 )
 
 var ec2Client = ec2.New(session.New())

@@ -7,9 +7,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/ibejohn818/awssh/api"
-	"github.com/ibejohn818/awssh/config"
-	"github.com/ibejohn818/awssh/shell"
+	"github.com/ibejohn818/go-awssh/api"
+	"github.com/ibejohn818/go-awssh/config"
+	"github.com/ibejohn818/go-awssh/shell"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"

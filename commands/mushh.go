@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/ibejohn818/awssh/config"
+	"github.com/ibejohn818/go-awssh/config"
 	"github.com/spf13/cobra"
 )
 

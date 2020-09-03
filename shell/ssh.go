@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ibejohn818/awssh/api"
+	"github.com/ibejohn818/go-awssh/api"
 	homedir "github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"

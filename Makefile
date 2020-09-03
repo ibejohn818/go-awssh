@@ -9,9 +9,9 @@ build_linux:
 	rm -rf ./dist/awssh
 
 build_osx:
-	GOOS=darwin GOARCH=386 go build -o ./dist/awssh awssh/awssh.go
+	GOOS=darwin GOARCH=amd64 go build -o ./dist/awssh awssh/awssh.go
 	chmod +x ./dist/awssh
-	zip ./dist/awssh-darwin-386.zip ./dist/awssh
+	zip ./dist/awssh-darwin-amd64.zip ./dist/awssh
 	rm -rf ./dist/awssh
 
 
