@@ -17,8 +17,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/ibejohn818/awssh/compute"
+	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -38,7 +41,20 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+
+		sdk := compute.NewEc2Sdk()
+		res := compute.LoadEips(sdk)
+		spew.Dump(res)
+
+		r := compute.GetInstances(sdk)
+		spew.Dump(r)
+	},
+}
+
+// AddCommands ....
+func AddCommands(cmd *cobra.Command) {
+	AddDevCmd(cmd)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -62,6 +78,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	AddCommands(rootCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
