@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/ibejohn818/awssh/compute"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -43,12 +41,6 @@ to quickly create a Cobra application.`,
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 
-		sdk := compute.NewEc2Sdk()
-		res := compute.LoadEips(sdk)
-		spew.Dump(res)
-
-		r := compute.GetInstances(sdk)
-		spew.Dump(r)
 	},
 }
 

@@ -17,12 +17,12 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ibejohn818/awssh/compute"
+	"github.com/ibejohn818/awssh/api"
 	"github.com/mitchellh/go-homedir"
 )
 
 type SSHClient struct {
-	Instance   compute.Ec2Instance
+	Instance   api.Ec2Instance
 	ClientConf *ssh.ClientConfig
 	SSHOpts    *SSHOpts
 	SshClient  *ssh.Client

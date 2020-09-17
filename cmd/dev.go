@@ -1,18 +1,17 @@
 package cmd
 
 import (
-	"bufio"
-	"bytes"
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ibejohn818/awssh/compute"
-	"github.com/ibejohn818/awssh/shell"
+	"github.com/ibejohn818/awssh/api"
 	"github.com/ibejohn818/awssh/utils"
 	"github.com/spf13/cobra"
 )
+
+func do_stuff() int {
+	return 1
+}
 
 // AddDevCmd ....
 func AddDevCmd(aCmd *cobra.Command) *cobra.Command {
@@ -20,62 +19,30 @@ func AddDevCmd(aCmd *cobra.Command) *cobra.Command {
 		Use: "dev",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			tp := utils.NewPrompt(func(op *utils.TextPrompt) {
-				op.InputPipe = os.Stdin
+			ec2 := api.NewEc2Client()
+
+			inst := ec2.GetInstances()
+			for _, i := range inst {
+				spew.Dump(i.GetMap())
+			}
+			spew.Dump(inst)
+
+			tp := utils.NewPrompt(func(p *utils.TextPrompt) {
+				p.InputBuffer = os.Stdin
 			})
 
-			a, _ := tp.Ask("Tester")
+			ans, _ := tp.Ask("Whay is your name?")
 
-			spew.Dump(a)
+			spew.Dump(ans)
 
+			// ec2 := api.NewEc2Client()
+
+			// res := ec2.GetInstances()
+
+			// spew.Dump(res)
 		},
 	}
 
 	aCmd.AddCommand(cmd)
 	return cmd
-}
-func ___mock() {
-
-	var bff bytes.Buffer
-
-	bff.Write([]byte("Testing"))
-	spew.Dump(bff)
-
-	var stdin = os.Stdin
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter text: ")
-	text, _ := reader.ReadString('\n')
-	stdin.Write([]byte("Testering\n"))
-	fmt.Println(text)
-}
-
-func ___ssh() {
-
-	sdk := compute.NewEc2Sdk()
-	servers := compute.GetInstances(sdk)
-	ops := shell.NewSSHOpts()
-	inst := servers[1]
-	client := shell.NewSSHClient(inst, &ops)
-	spew.Dump(client)
-	// spew.Dump(inst)
-	// client.Login(false)
-	// shell.SSHLogin(client)
-	client.Login2(false)
-}
-
-func resizeTerminal(timeout int) {
-	ticker := time.NewTicker(1 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
 }

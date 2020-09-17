@@ -1,14 +1,16 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type MenuSelect struct{}
 
 type TextPrompt struct {
-	InputPipe io.Reader
+	InputBuffer io.Reader
 }
 
 func NewPrompt(ops ...func(*TextPrompt)) TextPrompt {
@@ -23,9 +25,12 @@ func NewPrompt(ops ...func(*TextPrompt)) TextPrompt {
 
 func (tp *TextPrompt) Ask(msg string) (string, error) {
 
-	ans := "mock"
+	// ans := "mock"
+
+	rr := bufio.NewReader(tp.InputBuffer)
 
 	fmt.Print(msg + ": ")
+	ans, _ := rr.ReadString('\n')
 
-	return ans, nil
+	return strings.TrimSpace(ans), nil
 }
