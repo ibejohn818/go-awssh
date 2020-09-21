@@ -19,6 +19,7 @@ type Ec2Instance struct {
 	Ip         string
 	PrivateIp  string
 	State      string
+	HasEip     bool
 }
 
 type Ec2Client struct {
@@ -124,7 +125,7 @@ func parseNameTag(tags []*ec2.Tag) *string {
 	return name
 }
 
-func (inst *Ec2Instance) GetMap() map[string]string {
+func (inst *Ec2Instance) GetTplMap() map[string]string {
 
 	var i map[string]string
 	i = make(map[string]string)

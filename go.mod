@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.34.23
+	github.com/buger/goterm v0.0.0-20200322175922-2f3e71b85129 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
