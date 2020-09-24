@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -52,9 +53,8 @@ func (client *Ec2ConnClient) SendPublicKey(payload *Ec2ConnPayload) {
 
 	res, err := client.Sdk.SendSSHPublicKey(&inp)
 
-	if err != nil {
+	if err != nil || !*res.Success {
+		fmt.Println(err)
 		log.Fatal("Error sending key to instance")
 	}
-
-	spew.Dump(res)
 }

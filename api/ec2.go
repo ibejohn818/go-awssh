@@ -168,13 +168,13 @@ func (inst *Ec2Instance) GetFormattedLabel() string {
 	return t
 }
 
-func SelectInstance(inst []Ec2Instance) (*Ec2Instance, error) {
+func SelectInstance(inst []Ec2Instance, msg string) (*Ec2Instance, error) {
 
 	for _, v := range inst {
 		fmt.Println(v.Name)
 	}
 	prompt := promptui.Prompt{
-		Label: "Select an instance",
+		Label: fmt.Sprintf("%s [1-%d]", msg, len(inst)),
 		Stdin: os.Stdin,
 	}
 

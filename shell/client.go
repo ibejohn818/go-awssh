@@ -43,33 +43,67 @@ type SSHKey struct {
 	Body []byte
 }
 
-func NewSSHOpts() SSHOpts {
+func NewSSHOpts(ops ...func(*SSHOpts)) SSHOpts {
 	o := SSHOpts{}
-	o.IdentityFile = o.DefaultIdentityFile()
-	o.User = os.Getenv("USER")
-	o.Port = "22"
+	for _, v := range ops {
+		v(&o)
+	}
+
+	if len(o.User) <= 0 {
+
+		o.User = os.Getenv("USER")
+	}
+
+	if len(o.Port) <= 0 {
+		o.Port = "22"
+	}
+
 	o.Command = "login"
-	o.AuthMethods = make([]ssh.AuthMethod, 0, 1)
+
+	o.AuthMethods = make([]ssh.AuthMethod, 0, 0)
+
+	if len(o.IdentityFile) <= 0 {
+		o.AuthMethods = append(o.AuthMethods, appendSocketAuth())
+	}
+
+	if len(o.IdentityFile) <= 0 && len(o.AuthMethods) <= 0 {
+		o.IdentityFile = o.DefaultIdentityFile()
+	}
+
+	if len(o.IdentityFile) > 0 {
+		o.AuthMethods = append(o.AuthMethods,
+			appendPublicKeyAuth(o.IdentityFile))
+	}
+
+	spew.Dump("SSH OPTIONS")
+	spew.Dump(o)
+
+	return o
+}
+
+func appendSocketAuth() ssh.AuthMethod {
 	// s, _ := SSHKeyAuth()
 	sock, err := SSHAgent()
 	if err != nil {
 		fmt.Println("SOCK ERR")
 		spew.Dump(err)
 
-		key, err := NewSSHKey(o.IdentityFile)
-		keyAuth, err := SSHKeyAuth(key)
-		if err != nil {
-			fmt.Println("SSH Key Auth")
-			spew.Dump(err)
-		} else {
-
-			o.AuthMethods = append(o.AuthMethods, keyAuth)
-		}
-
-	} else {
-		o.AuthMethods = append(o.AuthMethods, sock)
 	}
-	return o
+	return sock
+
+}
+
+func appendPublicKeyAuth(aFile string) ssh.AuthMethod {
+
+	key, err := NewSSHKey(aFile)
+	keyAuth, err := SSHKeyAuth(key)
+
+	if err != nil {
+		fmt.Println("SSH Key Auth")
+		spew.Dump(err)
+	}
+	return keyAuth
+
 }
 
 func NewSSHKey(path string) (*SSHKey, error) {
@@ -87,7 +121,7 @@ func NewSSHKey(path string) (*SSHKey, error) {
 	return new, nil
 }
 
-func NewSSHClient(inst compute.Ec2Instance, opts *SSHOpts) *SSHClient {
+func NewSSHClient(inst api.Ec2Instance, opts *SSHOpts) *SSHClient {
 
 	conf := &ssh.ClientConfig{
 		User:            opts.User,
@@ -214,6 +248,7 @@ func (client *SSHClient) InteractiveSession() {
 	}
 
 	err = session.Shell()
+	resizeTerminal(session)
 	if err != nil {
 		fmt.Println("Error starting shell")
 		os.Exit(2)
@@ -396,29 +431,24 @@ func (client *SSHClient) Login2(usePrivate bool) {
 		os.Exit(2)
 	}
 
-	resizeTerminal(session, 10)
+	resizeTerminal(session)
 	session.Wait()
 
 }
 
-func resizeTerminal(aSession *ssh.Session, timeout int) {
+func resizeTerminal(aSession *ssh.Session) {
 	ticker := time.NewTicker(1 * time.Second)
 	quit := make(chan struct{})
-	c := 0
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				c++
-				// do stuff
 				aFileDes := int(os.Stdout.Fd())
 				termWidth, termHeight, _ := terminal.GetSize(aFileDes)
 
 				// fmt.Println(termWidth, termHeight, "\n")
 				aSession.WindowChange(termHeight, termWidth)
-				if c >= timeout {
-					// aSession.Close()
-				}
+
 				// buffer := bytes.Buffer{}
 				// buffer.Write([]byte("tput cols && tput lines\n"))
 				// buffer.Write([]byte("uptime\n"))
