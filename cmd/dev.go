@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ibejohn818/awssh/api"
-	"github.com/ibejohn818/awssh/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -14,26 +11,39 @@ func do_stuff() int {
 }
 
 // AddDevCmd ....
-func AddDevCmd(aCmd *cobra.Command) *cobra.Command {
+func AddDevCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "dev",
 		Run: func(cmd *cobra.Command, args []string) {
 
+			api.Region = gops.Region
 			ec2 := api.NewEc2Client()
+			ec2Conn := api.NewEc2ConnClient()
 
-			inst := ec2.GetInstances()
-			for _, i := range inst {
-				spew.Dump(i.GetMap())
-			}
+			list := ec2.GetInstances()
+			// for _, i := range inst {
+			// 	spew.Dump(i.GetTplMap())
+			// }
+
+			inst, _ := api.SelectInstance(list)
+
 			spew.Dump(inst)
 
-			tp := utils.NewPrompt(func(p *utils.TextPrompt) {
-				p.InputBuffer = os.Stdin
-			})
+			payload := api.Ec2ConnPayload{
+				User:       "danb",
+				Instance:   *inst,
+				PubKeyPath: "/Users/jhardy/.ssh/id_rsa.pub",
+			}
 
-			ans, _ := tp.Ask("Whay is your name?")
+			ec2Conn.SendPublicKey(&payload)
 
-			spew.Dump(ans)
+			// tp := utils.NewPrompt(func(p *utils.TextPrompt) {
+			// 	p.InputBuffer = os.Stdin
+			// })
+
+			// ans, _ := tp.Ask("Whay is your name?")
+
+			// spew.Dump(ans)
 
 			// ec2 := api.NewEc2Client()
 

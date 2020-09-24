@@ -2,8 +2,11 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/manifoldco/promptui"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
@@ -20,6 +23,7 @@ type Ec2Instance struct {
 	PrivateIp  string
 	State      string
 	HasEip     bool
+	AZ         string
 }
 
 type Ec2Client struct {
@@ -32,10 +36,7 @@ func NewEc2Client(ops ...func(*Ec2Client)) *Ec2Client {
 	if len(ops) == 1 {
 		ops[0](&c)
 	} else {
-		sess := session.Must(session.NewSessionWithOptions(session.Options{
-			SharedConfigState: session.SharedConfigEnable,
-		}))
-		c.Sdk = ec2.New(sess)
+		c.Sdk = ec2.New(defaultSession(), defaultConfig())
 	}
 
 	return &c
@@ -101,6 +102,9 @@ func (c *Ec2Client) GetInstances() []Ec2Instance {
 			if state := vv.State.Name; state != nil {
 				i.State = *state
 			}
+			if az := vv.Placement.AvailabilityZone; az != nil {
+				i.AZ = *az
+			}
 
 			ii = append(ii, *i)
 		}
@@ -145,6 +149,10 @@ func (inst *Ec2Instance) GetTplMap() map[string]string {
 	return i
 }
 
+func (inst *Ec2Instance) GetSubnet() {
+
+}
+
 func (inst *Ec2Instance) GetFormattedLabel() string {
 	// tmpl, err := template.New("ListServers").Parse("{{ .HasEip }} [{{ .Ip }}]: {{ .Name }}\n")
 
@@ -158,4 +166,24 @@ func (inst *Ec2Instance) GetFormattedLabel() string {
 	// }
 	t := ""
 	return t
+}
+
+func SelectInstance(inst []Ec2Instance) (*Ec2Instance, error) {
+
+	for _, v := range inst {
+		fmt.Println(v.Name)
+	}
+	prompt := promptui.Prompt{
+		Label: "Select an instance",
+		Stdin: os.Stdin,
+	}
+
+	ans, _ := prompt.Run()
+
+	key, _ := strconv.Atoi(ans)
+
+	res := inst[(key - 1)]
+
+	return &res, nil
+
 }

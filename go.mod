@@ -7,6 +7,7 @@ require (
 	github.com/buger/goterm v0.0.0-20200322175922-2f3e71b85129 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-delve/delve v1.5.0 // indirect
+	github.com/manifoldco/promptui v0.7.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
