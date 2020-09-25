@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2instanceconnect"
 	"github.com/aws/aws-sdk-go/service/ec2instanceconnect/ec2instanceconnectiface"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type Ec2ConnClient struct {
@@ -55,7 +54,7 @@ func (client *Ec2ConnClient) SendPublicKey(payload *Ec2ConnPayload) {
 		SSHPublicKey:     &pubKeyStr,
 	}
 
-	spew.Dump(inp)
+	//spew.Dump(inp)
 
 	res, err := client.Sdk.SendSSHPublicKey(&inp)
 
