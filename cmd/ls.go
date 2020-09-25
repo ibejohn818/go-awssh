@@ -10,7 +10,7 @@ import (
 func AddLsCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 
 	lsCmd := cobra.Command{
-		Use:   "ssh",
+		Use:   "ls",
 		Short: "",
 		Run: func(cmd *cobra.Command, args []string) {
 

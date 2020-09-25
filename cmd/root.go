@@ -20,9 +20,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/viper"
 )
 
 type GlobalConfig struct {
@@ -41,9 +41,8 @@ func InitCli() (*cobra.Command, *GlobalConfig) {
 	awsshCmd := cobra.Command{
 		Use:   "awssh",
 		Short: "AWS Ec2 ssh connections",
-		Run: func(cmd *cobra.Command, args []string) {
+		//Run: func(cmd *cobra.Command, args []string) {},
 
-		},
 	}
 
 	pflags := awsshCmd.PersistentFlags()
