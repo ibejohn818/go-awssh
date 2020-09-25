@@ -32,6 +32,12 @@ type Ec2ConnPayload struct {
 	Instance   Ec2Instance
 }
 
+/*
+func NewEc2ConnPayload() *Ec2ConnPayload {
+
+}
+*/
+
 func (client *Ec2ConnClient) SendPublicKey(payload *Ec2ConnPayload) {
 
 	pubKey, err := ioutil.ReadFile(payload.PubKeyPath)

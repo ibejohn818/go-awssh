@@ -56,8 +56,9 @@ func InitCli() (*cobra.Command, *GlobalConfig) {
 
 // AddCommands ....
 func addCommands(cmd *cobra.Command, ops *GlobalConfig) {
-	AddDevCmd(cmd, ops)
+	//AddDevCmd(cmd, ops)
 	AddSshCmd(cmd, ops)
+	AddLsCmd(cmd, ops)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

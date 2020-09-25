@@ -36,6 +36,8 @@ type SSHOpts struct {
 	User, Port      string
 	Command         string
 	AuthMethods     []ssh.AuthMethod
+	ForcePrivKey    bool
+	UsePrivateIp    bool
 }
 
 type SSHKey struct {
@@ -66,7 +68,10 @@ func NewSSHOpts(ops ...func(*SSHOpts)) SSHOpts {
 		o.AuthMethods = append(o.AuthMethods, appendSocketAuth())
 	}
 
-	if len(o.IdentityFile) <= 0 && len(o.AuthMethods) <= 0 {
+	privKeyChk1 := len(o.IdentityFile) <= 0 && len(o.AuthMethods) <= 0
+	privKeyChk2 := len(o.IdentityFile) <= 0 && o.ForcePrivKey
+	//if len(o.IdentityFile) <= 0 && len(o.AuthMethods) <= 0 {
+	if privKeyChk1 || privKeyChk2 {
 		o.IdentityFile = o.DefaultIdentityFile()
 	}
 
@@ -75,15 +80,13 @@ func NewSSHOpts(ops ...func(*SSHOpts)) SSHOpts {
 			appendPublicKeyAuth(o.IdentityFile))
 	}
 
-	spew.Dump("SSH OPTIONS")
-	spew.Dump(o)
-
 	return o
 }
 
 func appendSocketAuth() ssh.AuthMethod {
 	// s, _ := SSHKeyAuth()
-	sock, err := SSHAgent()
+	// sock, err := SSHAgent()
+	sock, err := AgentAuth()
 	if err != nil {
 		fmt.Println("SOCK ERR")
 		spew.Dump(err)
@@ -206,6 +209,8 @@ func (client *SSHClient) InteractiveSession() {
 
 	session, err := client.SshClient.NewSession()
 
+	defer client.SshClient.Close()
+
 	if err != nil {
 		fmt.Println("Cannot create SSH session ")
 		fmt.Println(err)
@@ -226,14 +231,16 @@ func (client *SSHClient) InteractiveSession() {
 	originalState, err := terminal.MakeRaw(fileDescriptor)
 
 	defer terminal.Restore(fileDescriptor, originalState)
+
 	termWidth, termHeight, err := terminal.GetSize(fileDescriptor)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	// err = session.RequestPty("xterm-256color", termHeight, termWidth, termModes)
-	fmt.Println("Height: ", termHeight, "TermWidth: ", termWidth)
 
-	err = session.RequestPty("xterm", termHeight, termWidth, termModes)
+	xterm := "xterm-256color"
+	err = session.RequestPty(xterm, termHeight, termWidth, termModes)
+
 	if err != nil {
 		fmt.Println("Error requesting a terminal")
 		os.Exit(2)
@@ -243,26 +250,55 @@ func (client *SSHClient) InteractiveSession() {
 		client.ForwardAuthSock()
 	}
 
-	if len(client.SSHOpts.Command) > 0 {
-		session.Run(client.SSHOpts.Command)
-	}
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stderr
+	session.Stdin = os.Stdin
 
 	err = session.Shell()
+
 	resizeTerminal(session)
+
 	if err != nil {
 		fmt.Println("Error starting shell")
 		os.Exit(2)
 	}
 
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
-	session.Stdin = os.Stdin
-
 	session.Wait()
 }
+
+func SSHBastionLogin(bClient *SSHClient, client *SSHClient) {
+
+	ip := bClient.Instance.Ip
+	bAddr := net.JoinHostPort(ip, client.SSHOpts.Port)
+
+	pip := client.Instance.PrivateIp
+	addr := net.JoinHostPort(pip, client.SSHOpts.Port)
+
+	bConn, err := ssh.Dial("tcp", bAddr, bClient.ClientConf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sConn, err := bConn.Dial("tcp", addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ncc, chans, reqs, err := ssh.NewClientConn(sConn, addr, client.ClientConf)
+
+	sshConn := ssh.NewClient(ncc, chans, reqs)
+	client.SshClient = sshConn
+
+	client.InteractiveSession()
+}
+
 func SSHLogin(client *SSHClient) {
 
 	ip := client.Instance.Ip
+
+	if client.SSHOpts.UsePrivateIp {
+		ip = client.Instance.PrivateIp
+	}
 
 	addr := net.JoinHostPort(ip, client.SSHOpts.Port)
 
@@ -272,7 +308,6 @@ func SSHLogin(client *SSHClient) {
 		fmt.Println(err)
 		os.Exit(2)
 	}
-	defer sshConn.Close()
 
 	client.SshClient = sshConn
 
@@ -297,7 +332,9 @@ func SSHAgent() (ssh.AuthMethod, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ssh.PublicKeysCallback(agent.NewClient(sock).Signers), nil
+	signer := agent.NewClient(sock).Signers
+
+	return ssh.PublicKeysCallback(signer), nil
 }
 
 func AgentAuth() (ssh.AuthMethod, error) {
@@ -411,8 +448,8 @@ func (client *SSHClient) Login2(usePrivate bool) {
 	// err = session.RequestPty("xterm-256color", termHeight, termWidth, termModes)
 	fmt.Println("Height: ", termHeight, "TermWidth: ", termWidth)
 
-	err = session.RequestPty("xterm", termHeight, termWidth, termModes)
-	// err = session.RequestPty("xterm-256color", 100, 100, termModes)
+	xterm := "xterm-256color"
+	err = session.RequestPty(xterm, termHeight, termWidth, termModes)
 	if err != nil {
 		fmt.Println("Error requesting a terminal")
 		os.Exit(2)
@@ -449,23 +486,6 @@ func resizeTerminal(aSession *ssh.Session) {
 				// fmt.Println(termWidth, termHeight, "\n")
 				aSession.WindowChange(termHeight, termWidth)
 
-				// buffer := bytes.Buffer{}
-				// buffer.Write([]byte("tput cols && tput lines\n"))
-				// buffer.Write([]byte("uptime\n"))
-				// var br = []byte("uptime\n")
-				// res, err := aSession.SendRequest("uptime\n", true, br)
-				// spew.Dump(res)
-				// if err != nil {
-				// 	fmt.Println(err)
-				// }
-
-				// os.Stdin = &buffer
-				// aSession.Stdin = &buffer
-				// aSession.Stdin = os.Stdin
-				// log.Printf("Resize: %dx%d", termHeight, termWidth)
-				// c := fmt.Sprintf("resizecons %dx%d", termWidth, termHeight)
-				// aSession.Run(c)
-				// aSession.RequestPty("xterm", termHeight, termWidth, termModes)
 			case <-quit:
 				ticker.Stop()
 				return

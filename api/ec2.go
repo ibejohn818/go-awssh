@@ -1,10 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"os"
 	"strconv"
 
+	"github.com/bradfitz/slice"
 	"github.com/manifoldco/promptui"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -106,10 +109,18 @@ func (c *Ec2Client) GetInstances() []Ec2Instance {
 				i.AZ = *az
 			}
 
+			// check if ip is nil, if just use private
+			if len(i.Ip) <= 0 {
+				i.Ip = i.PrivateIp
+			}
+
 			ii = append(ii, *i)
 		}
 	}
 
+	slice.Sort(ii, func(i, j int) bool {
+		return ii[i].Name < ii[j].Name
+	})
 	// slice.Sort(ec2Coll.Instances, func(i, j int) bool {
 	// 	return ec2Coll.Instances[i].Name < ec2Coll.Instances[j].Name
 	// })
@@ -134,18 +145,12 @@ func (inst *Ec2Instance) GetTplMap() map[string]string {
 	var i map[string]string
 	i = make(map[string]string)
 
-	if inst.InstanceID != "" {
-		i["InstanceID"] = inst.InstanceID
-	}
-	if inst.Ip != "" {
-		i["Ip"] = inst.Ip
-	}
-	if inst.Name != "" {
-		i["Name"] = inst.Name
-	}
-	if inst.State != "" {
-		i["State"] = inst.State
-	}
+	i["InstanceID"] = inst.InstanceID
+	i["Ip"] = fmt.Sprintf("%15s", inst.Ip)
+	i["PrivateIp"] = fmt.Sprintf("%15s", inst.PrivateIp)
+	i["Name"] = inst.Name
+	i["State"] = inst.State
+
 	return i
 }
 
@@ -153,25 +158,39 @@ func (inst *Ec2Instance) GetSubnet() {
 
 }
 
-func (inst *Ec2Instance) GetFormattedLabel() string {
-	// tmpl, err := template.New("ListServers").Parse("{{ .HasEip }} [{{ .Ip }}]: {{ .Name }}\n")
+func (inst *Ec2Instance) GetFormattedLabel(usePrivate bool) string {
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+	m := inst.GetTplMap()
+
+	m["useIp"] = m["Ip"]
+
+	if usePrivate {
+		m["useIp"] = m["PrivateIp"]
+	}
+
+	tmpl, err := template.New("ListServers").Parse("[{{ .Ip }}]: {{ .Name }}")
+
+	if err != nil {
+		panic(err)
+	}
 
 	// for _, inst := range col.Instances {
 	// 	m := inst.GetTplMap()
 	// 	tmpl.Execute(os.Stdout, m)
 	// }
-	t := ""
-	return t
+
+	var buff bytes.Buffer
+
+	tmpl.Execute(&buff, m)
+
+	return buff.String()
 }
 
 func SelectInstance(inst []Ec2Instance, msg string) (*Ec2Instance, error) {
 
-	for _, v := range inst {
-		fmt.Println(v.Name)
+	for k, v := range inst {
+		ln := v.GetFormattedLabel(false)
+		fmt.Printf("%d) %s \n", (k + 1), ln)
 	}
 	prompt := promptui.Prompt{
 		Label: fmt.Sprintf("%s [1-%d]", msg, len(inst)),
