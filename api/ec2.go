@@ -168,7 +168,7 @@ func (inst *Ec2Instance) GetFormattedLabel(usePrivate bool) string {
 		m["useIp"] = m["PrivateIp"]
 	}
 
-	tmpl, err := template.New("ListServers").Parse("[{{ .Ip }}]: {{ .Name }}")
+	tmpl, err := template.New("ListServers").Parse("[{{ .useIp }}]: {{ .Name }}")
 
 	if err != nil {
 		panic(err)
@@ -186,10 +186,10 @@ func (inst *Ec2Instance) GetFormattedLabel(usePrivate bool) string {
 	return buff.String()
 }
 
-func SelectInstance(inst []Ec2Instance, msg string) (*Ec2Instance, error) {
+func SelectInstance(inst []Ec2Instance, msg string, showPrivate bool) (*Ec2Instance, error) {
 
 	for k, v := range inst {
-		ln := v.GetFormattedLabel(false)
+		ln := v.GetFormattedLabel(showPrivate)
 		fmt.Printf("%d) %s \n", (k + 1), ln)
 	}
 	prompt := promptui.Prompt{

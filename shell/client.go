@@ -116,12 +116,12 @@ func NewSSHKey(path string) (*SSHKey, error) {
 		return nil, err
 	}
 
-	new := &SSHKey{
+	key := SSHKey{
 		Path: path,
 		Body: bytes,
 	}
 
-	return new, nil
+	return &key, nil
 }
 
 func NewSSHClient(inst api.Ec2Instance, opts *SSHOpts) *SSHClient {
@@ -301,7 +301,6 @@ func decryptSSHKey(priv *SSHKey) (ssh.AuthMethod, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Fprintln(os.Stderr)
 
 	signer, err := _DecryptSSHKey(priv.Body, passphrase)
 	if err != nil {

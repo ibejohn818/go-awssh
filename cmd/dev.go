@@ -25,7 +25,7 @@ func AddDevCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 			// 	spew.Dump(i.GetTplMap())
 			// }
 
-			inst, _ := api.SelectInstance(list, "Select an instance")
+			inst, _ := api.SelectInstance(list, "Select an instance", true)
 
 			spew.Dump(inst)
 

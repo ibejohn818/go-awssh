@@ -72,6 +72,7 @@ func AddSshCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 	flags.StringVarP(&ops.PrivKey, "identity", "i", "", "Path to ssh private key to use")
 	flags.BoolVarP(&ops.UseBastion, "bastion", "b", false, "Connect via a bastion host")
 	flags.BoolVarP(&ops.UseEc2Conn, "ec2connect", "c", false, "Send public key via ec2-instance-connect")
+	flags.StringVarP(&ops.PubKey, "pubkey", "k", "", "Path to public key to send via ec2-instance-connect")
 	flags.BoolVarP(&ops.ForwardSocket, "auth", "A", false, "Forward SSH_AUTH_SOCK")
 	flags.BoolVarP(&ops.UsePrivateIp, "private", "", false, "Use private ip address")
 	aCmd.AddCommand(&sshCmd)
@@ -133,14 +134,14 @@ func selectInstances(ops *SshOps) (*api.Ec2Instance, *api.Ec2Instance, error) {
 	if ops.UseBastion {
 		var bErr error
 
-		bastionTarget, bErr = api.SelectInstance(list, "Select Bastion Host")
+		bastionTarget, bErr = api.SelectInstance(list, "Select Bastion Host", ops.UsePrivateIp)
 
 		if bErr != nil {
 			log.Fatal("Invalid bastion instance")
 		}
 	}
 
-	target, eErr = api.SelectInstance(list, "Select instance")
+	target, eErr = api.SelectInstance(list, "Select instance", ops.UsePrivateIp)
 
 	if eErr != nil {
 
