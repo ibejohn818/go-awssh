@@ -1,0 +1,12 @@
+{
+    "Addresses": [
+        {
+            "PublicIp": "mock-ip1",
+            "AllocationId": "mock-alloc1"
+        },
+        {
+            "PublicIp": "mock-ip2",
+            "AllocationId": "mock-alloc2"
+        }
+    ]
+}

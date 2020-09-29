@@ -87,6 +87,12 @@ func handleSshConn(target *api.Ec2Instance, bastion *api.Ec2Instance, ops *SshOp
 		sendSSHKeys(target, bastion, ops, sshOpts)
 	}
 
+	// if bastion selected, set target to use private IP
+	// TODO: @jhardy: Ugly ... update to a better method
+	if ops.UseBastion {
+		ops.UsePrivateIp = true
+	}
+
 	targetClient := shell.NewSSHClient(*target, sshOpts)
 
 	if ops.UseBastion {

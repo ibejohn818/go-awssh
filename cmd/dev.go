@@ -17,25 +17,31 @@ func AddDevCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			api.Region = gops.Region
-			ec2 := api.NewEc2Client()
-			ec2Conn := api.NewEc2ConnClient()
 
-			list := ec2.GetInstances()
+			ec2Client := api.NewEc2Client()
+
+			ips := ec2Client.GetEips()
+			spew.Dump(ips)
+
+			// ec2 := api.NewEc2Client()
+			// ec2Conn := api.NewEc2ConnClient()
+
+			// list := ec2.GetInstances()
 			// for _, i := range inst {
 			// 	spew.Dump(i.GetTplMap())
 			// }
 
-			inst, _ := api.SelectInstance(list, "Select an instance", true)
+			// inst, _ := api.SelectInstance(list, "Select an instance", true)
 
-			spew.Dump(inst)
+			// spew.Dump(inst)
 
-			payload := api.Ec2ConnPayload{
-				User:       "danb",
-				Instance:   *inst,
-				PubKeyPath: "/Users/jhardy/.ssh/id_rsa.pub",
-			}
+			// payload := api.Ec2ConnPayload{
+			// 	User:       "danb",
+			// 	Instance:   *inst,
+			// 	PubKeyPath: "/Users/jhardy/.ssh/id_rsa.pub",
+			// }
 
-			ec2Conn.SendPublicKey(&payload)
+			// ec2Conn.SendPublicKey(&payload)
 
 			// tp := utils.NewPrompt(func(p *utils.TextPrompt) {
 			// 	p.InputBuffer = os.Stdin

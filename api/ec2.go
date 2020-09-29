@@ -45,7 +45,7 @@ func NewEc2Client(ops ...func(*Ec2Client)) *Ec2Client {
 	return &c
 }
 
-func (c *Ec2Client) LoadEips() []ElasticIp {
+func (c *Ec2Client) GetEips() []ElasticIp {
 
 	// sess := session.Must(session.NewSession(&aws.Config{
 	// 	Region: aws.String(endpoints.UsWest2RegionID),
@@ -59,7 +59,7 @@ func (c *Ec2Client) LoadEips() []ElasticIp {
 		panic(err)
 	}
 
-	ips := make([]ElasticIp, 0, 1)
+	ips := make([]ElasticIp, 0, 0)
 
 	for _, v := range res.Addresses {
 		ips = append(ips, ElasticIp{
@@ -81,6 +81,7 @@ func (c *Ec2Client) GetInstances() []Ec2Instance {
 	if err != nil {
 		fmt.Println(err)
 	}
+	eips := c.GetEips()
 
 	for _, v := range res.Reservations {
 		for _, vv := range v.Instances {
@@ -114,6 +115,9 @@ func (c *Ec2Client) GetInstances() []Ec2Instance {
 				i.Ip = i.PrivateIp
 			}
 
+			// check if we have EIP
+			i.HasEip = checkHasEip(*i, eips)
+
 			ii = append(ii, *i)
 		}
 	}
@@ -138,6 +142,17 @@ func parseNameTag(tags []*ec2.Tag) *string {
 		}
 	}
 	return name
+}
+
+func checkHasEip(inst Ec2Instance, ips []ElasticIp) bool {
+
+	for _, v := range ips {
+		if *v.Ip == inst.Ip {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (inst *Ec2Instance) GetTplMap() map[string]string {
@@ -168,7 +183,11 @@ func (inst *Ec2Instance) GetFormattedLabel(usePrivate bool) string {
 		m["useIp"] = m["PrivateIp"]
 	}
 
-	tmpl, err := template.New("ListServers").Parse("[{{ .useIp }}]: {{ .Name }}")
+	m["hasEip"] = " "
+	if inst.HasEip && !usePrivate {
+		m["hasEip"] = "✓"
+	}
+	tmpl, err := template.New("ListServers").Parse("{{ .hasEip }}[{{ .useIp }}]: {{ .Name }}")
 
 	if err != nil {
 		panic(err)

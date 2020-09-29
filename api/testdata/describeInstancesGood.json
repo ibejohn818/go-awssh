@@ -1,0 +1,45 @@
+{
+	"Reservations": [
+		{
+
+				"Instances": [
+					{
+						"InstanceId": "mock-id1",
+						"PublicIpAddress": "mock-ip1",
+						"PrivateIpAddress": "mock-pip1",
+						"Tags":[
+							{
+								"Key": "Name",
+								"Value": "mock1"
+							}
+						]
+					},
+					{
+						"InstanceId": "mock-id2",
+						"_PublicIpAddress": "mock-ip2",
+						"_PrivateIpAddress": "mock-pip2",
+						"Tags":[
+							{
+								"Key": "_Name",
+								"Value": "mock1"
+							}
+						]
+					},
+					{
+						"InstanceId": "mock-id3",
+						"PublicIpAddress": "",
+						"PrivateIpAddress": "mock-pip3",
+						"Tags":[
+							{
+								"Key": "Name",
+								"Value": "mock3"
+							}
+						]
+					}
+				]
+			}
+		
+	]
+
+	
+}

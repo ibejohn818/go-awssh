@@ -333,6 +333,10 @@ func (opts *SSHOpts) DefaultIdentityFile() string {
 
 }
 
+func (opts *SSHOpts) getConnecdtionIp() string {
+	return ""
+}
+
 func resizeTerminal(aSession *ssh.Session) {
 	ticker := time.NewTicker(1 * time.Second)
 	quit := make(chan struct{})
