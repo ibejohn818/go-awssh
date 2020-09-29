@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/ibejohn818/awssh/api"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +26,6 @@ func AddLsCmd(aCmd *cobra.Command, gops *GlobalConfig) *cobra.Command {
 
 			list := ec2Client.GetInstances()
 
-			spew.Dump(ops)
 			for k, v := range list {
 				ln := v.GetFormattedLabel(ops.PrivateIps)
 				fmt.Printf("%d) %s \n", (k + 1), ln)
